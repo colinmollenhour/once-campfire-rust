@@ -68,3 +68,15 @@ faster or better.
 `parity/` builds the reference image as `campfire-reference` from `reference/Dockerfile` and runs it
 in production mode with a fixed `SECRET_KEY_BASE` (see `parity/.env.reference`) so that golden
 vectors, seeds and screenshots are reproducible. Those keys are for tests only.
+
+## This fork
+
+This is a fork that merges upstream (`basecamp/once-campfire-rust`) from time to time; `FORK.md`
+has the rules and the merge steps. In short:
+
+- Fork-only features go in `crates/fork` (`campfire_fork`), with their tests. Upstream files
+  change only at hook points, one line each where possible, marked `// fork:` and listed in
+  `FORK.md`.
+- Document fork-only changes in `FORK.md`, not under "Known differences" in `README.md` (which is
+  upstream's list, so the rule above applies to upstream-bound changes only).
+- Start fork commit messages with `fork:`.

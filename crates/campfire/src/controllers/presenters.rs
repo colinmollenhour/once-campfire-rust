@@ -293,7 +293,7 @@ impl<'a> Presenter<'a> {
             }));
         }
         Ok(match campfire_richtext::present_message(&body, &ctx) {
-            Presentation::Html(html) => MessageContent::Text { html },
+            Presentation::Html(html) => MessageContent::Text { html: campfire_fork::link_references(html) }, // fork: references
             Presentation::Unrenderable => MessageContent::Unrenderable,
         })
     }

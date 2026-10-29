@@ -27,6 +27,7 @@ campfire_storage  = { path = "crates/storage" }
 campfire_cable    = { path = "crates/cable" }
 campfire_assets   = { path = "crates/assets" }
 campfire_views    = { path = "crates/views" }
+campfire_fork     = { path = "crates/fork" }
 
 tokio        = { version = "1", features = ["full"] }
 # Router plus ConnectInfo (`tokio`) only: kit parses params and multipart itself, the front server

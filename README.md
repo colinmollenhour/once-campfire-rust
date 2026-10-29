@@ -8,6 +8,8 @@ One `campfire` executable replaces Ruby, Puma, Redis, Resque and Thruster, with 
 for media. The Rails frontend ships with a few [port-owned overrides](crates/assets/OVERRIDES.md).
 The app includes TLS, HTTP/2, Web Push, bot webhooks, search and Action Cable-compatible WebSockets.
 
+This fork adds a few features of its own; see [FORK.md](FORK.md).
+
 ## Running it
 
 With [ONCE](https://github.com/basecamp/once), on a server with Docker:
