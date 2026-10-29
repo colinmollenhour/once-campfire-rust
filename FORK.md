@@ -55,6 +55,22 @@ passed down to the presenter. That keeps the hooks to one line each, outside the
 `config.rs` upstream changes most. The cost is a global: code that presents messages without
 `init` having run (upstream's tests) links nothing.
 
+## Deploying
+
+Production is the `Campfire` service in Railway's Prancing Pony project, built from this fork
+rather than pulled from upstream's image:
+
+```sh
+railway link     # once: Prancing Pony, production
+crates/fork/bin/deploy-railway Campfire            # HEAD, or name a commit
+```
+
+It sets `APP_VERSION` and `GIT_REVISION` to the commit, uploads a clean export (Railway builds the
+Dockerfile, about 10 minutes), and returns once the upload is done; Railway keeps the old
+deployment serving until the new one passes `/up`. The only change to the build is the cache
+mount ids, which Railway wants prefixed with the service's id. `CAMPFIRE_REFERENCES` is a
+service variable. To roll back, redeploy an earlier deployment from Railway's dashboard.
+
 ## Merging upstream
 
 Once, in a clone:

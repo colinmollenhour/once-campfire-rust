@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Deploys a commit of this fork to a Railway service: Railway builds the Dockerfile from a clean
+# export of the commit and its reference/ submodule, so untracked files stay local, and the
+# service's APP_VERSION and GIT_REVISION are set to the commit.
+#
+#   crates/fork/bin/deploy-railway <service> [<commit>]
+#
+# Run it from a checkout linked to the project and environment (`railway link`).
+set -euo pipefail
+
+service=${1:?usage: deploy-railway <service> [<commit>]}
+sha=$(git rev-parse --verify "${2:-HEAD}^{commit}")
+cd "$(git rev-parse --show-toplevel)"
+
+service_id=$(railway status --json | jq -r --arg name "$service" \
+  'first(.environments.edges[].node.serviceInstances.edges[].node | select(.serviceName == $name) | .serviceId) // empty')
+[ -n "$service_id" ] || { echo "no service named $service in the linked project" >&2; exit 1; }
+
+export_dir=$(mktemp -d)
+trap 'rm -rf "$export_dir"' EXIT
+git archive "$sha" | tar -x -C "$export_dir"
+mkdir -p "$export_dir/reference"
+git -C reference archive "$(git rev-parse "$sha:reference")" | tar -x -C "$export_dir/reference"
+# Only what the Dockerfile copies.
+rm -rf "$export_dir"/{bench,docs,parity,plans,reference-tools,vectors} "$export_dir"/crates/*/tests/golden
+# Railway takes only cache mounts whose id starts with the service's.
+sed -i "s|--mount=type=cache,id=|--mount=type=cache,id=s/$service_id-|g" "$export_dir/Dockerfile"
+
+railway variables --service "$service" --skip-deploys \
+  --set "APP_VERSION=fork-$(git rev-parse --short "$sha")" --set "GIT_REVISION=$sha"
+railway up "$export_dir" --path-as-root --service "$service" --detach
