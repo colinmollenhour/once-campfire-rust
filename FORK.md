@@ -49,6 +49,10 @@ JSON array of rules:
 - It's read at boot, so a change takes a restart. The restart also empties the in-process
   fragment store, so no message keeps links made with the old rules.
 - Unset or blank, nothing changes.
+- Overlapping matches are checked with an ordered interval index, preserving rule priority without
+  comparing every reference with all earlier matches. In an optimized standalone run on this host,
+  80,000 references in 480 KB took 34 ms, down from 2.44 s. This measures the linker alone, not a
+  complete message request; raw before-and-after output is kept in ignored `tmp/bench/`.
 
 The rules are process-wide, set once by `campfire_fork::init`, rather than a field of `Config`
 passed down to the presenter. That keeps the hooks to one line each, outside the parts of

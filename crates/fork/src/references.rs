@@ -8,6 +8,8 @@
 //! code blocks, mentions or attachments. The output it works on is serialized with `<` and `>`
 //! escaped everywhere but in tags (see `autolink`), so the text between tags is plain.
 
+use std::collections::BTreeMap;
+
 use regex::Regex;
 use serde_json::Value;
 
@@ -76,9 +78,13 @@ impl References {
 
     fn link_text(&self, text: &str, out: &mut String) {
         let mut found: Vec<(usize, usize, String)> = Vec::new();
+        let mut occupied = BTreeMap::<usize, usize>::new();
         for rule in &self.rules {
             for (start, end, url) in rule.find(text) {
-                if !found.iter().any(|&(s, e, _)| start < e && s < end) {
+                let overlaps_previous = occupied.range(..=start).next_back().is_some_and(|(_, previous_end)| *previous_end > start);
+                let overlaps_next = occupied.range(start..).next().is_some_and(|(next_start, _)| *next_start < end);
+                if !overlaps_previous && !overlaps_next {
+                    occupied.insert(start, end);
                     found.push((start, end, url));
                 }
             }
@@ -290,6 +296,26 @@ mod tests {
         for text in ["dev-3400", "ADEV-1", "DEV-1-2", "DEV-", "DEVICE-APP-12", "x/DEV-1", "DEV-1a"] {
             assert_eq!(links.link(text), text, "{text}");
         }
+    }
+
+    #[test]
+    fn earlier_rules_win_over_overlapping_references() {
+        let gitlab = r#"{"gitlab":"https://gitlab.example.com","group":"acme"}"#;
+        let ids = r#"{"prefixes":["DEV"],"url":"https://issues.example.com/{id}"}"#;
+        let gitlab_first = References::from_json(&format!("[{gitlab},{ids}]")).unwrap();
+        let ids_first = References::from_json(&format!("[{ids},{gitlab}]")).unwrap();
+        assert_eq!(
+            gitlab_first.link("DEV-1!2 DEV-3"),
+            format!(
+                "{} {}",
+                a("https://gitlab.example.com/acme/DEV-1/-/merge_requests/2", "DEV-1!2"),
+                a("https://issues.example.com/DEV-3", "DEV-3")
+            )
+        );
+        assert_eq!(
+            ids_first.link("DEV-1!2 DEV-3"),
+            format!("{}!2 {}", a("https://issues.example.com/DEV-1", "DEV-1"), a("https://issues.example.com/DEV-3", "DEV-3"))
+        );
     }
 
     #[test]
