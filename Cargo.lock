@@ -338,6 +338,7 @@ dependencies = [
  "campfire_assets",
  "campfire_cable",
  "campfire_db",
+ "campfire_fork",
  "campfire_kit",
  "campfire_richtext",
  "campfire_routes",
@@ -430,6 +431,16 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "campfire_fork"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "campfire_richtext",
+ "regex",
+ "serde_json",
 ]
 
 [[package]]

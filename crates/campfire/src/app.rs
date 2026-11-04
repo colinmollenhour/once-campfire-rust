@@ -265,6 +265,7 @@ pub fn run() -> anyhow::Result<()> {
         return Ok(());
     }
     let config = Config::from_env()?;
+    campfire_fork::init()?; // fork: settings
     init_logging(&config);
     match command.as_deref() {
         None | Some("server") => {

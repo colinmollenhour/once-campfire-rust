@@ -19,6 +19,7 @@ campfire_storage.workspace = true
 campfire_cable.workspace = true
 campfire_assets.workspace = true
 campfire_views.workspace = true
+campfire_fork.workspace = true
 anyhow.workspace = true
 tikv-jemallocator.workspace = true
 libc.workspace = true
